@@ -19,6 +19,8 @@ use cocoa::foundation::NSArray;
 use cocoa::foundation::NSURL;
 use std::ffi::CStr;
 
+use objc::runtime::{BOOL, NO, YES};
+
 static AUX_DELEGATE_STATE_NAME: &str = "auxState";
 
 pub struct AuxDelegateState {
@@ -55,6 +57,10 @@ lazy_static! {
     decl.add_method(
       sel!(application:openURLs:),
       application_open_urls as extern "C" fn(&Object, Sel, id, id),
+    );
+    decl.add_method(
+      sel!(applicationShouldHandleReopen:hasVisibleWindows:),
+      application_should_handle_reopen as extern "C" fn(&Object, Sel, id, BOOL) -> BOOL,
     );
     decl.add_ivar::<*mut c_void>(AUX_DELEGATE_STATE_NAME);
 
@@ -122,4 +128,20 @@ extern "C" fn application_open_urls(_: &Object, _: Sel, _: id, urls: id) -> () {
   trace!("Get `application:openURLs:` URLs: {:?}", urls);
   AppState::open_urls(urls);
   trace!("Completed `application:openURLs:`");
+}
+
+extern "C" fn application_should_handle_reopen(
+  _: &Object,
+  _: Sel,
+  _: id,
+  has_visible_windows: BOOL,
+) -> BOOL {
+  trace!("Triggered `applicationShouldHandleReopen`");
+  let should_handle = AppState::should_handle_reopen(has_visible_windows == YES);
+  trace!("Completed `applicationShouldHandleReopen`");
+  if should_handle {
+    YES
+  } else {
+    NO
+  }
 }
