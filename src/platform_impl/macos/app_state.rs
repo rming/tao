@@ -309,14 +309,14 @@ impl AppState {
   }
 
   pub fn should_handle_reopen(has_visible_windows: bool) -> bool {
-    let mut handled = false;
+    let mut should_handle = true;
 
     HANDLER.handle_nonuser_event_without_wrapper(Event::ApplicationShouldHandleReopen {
       has_visible_windows,
-      handled: &mut handled,
+      should_handle: &mut should_handle,
     });
 
-    handled
+    should_handle
   }
 
   pub fn open_urls(urls: Vec<url::Url>) {
